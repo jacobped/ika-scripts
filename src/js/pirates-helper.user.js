@@ -55,11 +55,7 @@
             }
 
             if ($('#captcha').length > 0) {
-                // Captcha found -> play sound & try to solve it
-                if (CFG_WITH_SOUND) {
-                    this.beepSound.play();
-                }
-
+                // Captcha found -> try to solve it
                 if (CFG_API_KEY.length > 0 && this.captchaSolver.captchaId === null) {
                     this.captchaSolver.initCaptchaSolver(document.querySelector('.captchaImage'));
                     //this.stop() //placed for debugging capchaSolver
@@ -103,6 +99,11 @@
                 GM_log('There is already a captcha being processed...');
 
                 return;
+            }
+
+            // play sound
+            if (CFG_WITH_SOUND) {
+                this.beepSound.play();
             }
 
             // Helpfull for debugging
