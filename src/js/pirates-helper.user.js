@@ -62,9 +62,11 @@
 
                 if (CFG_API_KEY.length > 0 && this.captchaSolver.captchaId === null) {
                     this.captchaSolver.initCaptchaSolver(document.querySelector('.captchaImage'));
+                    //this.stop() //placed for debugging capchaSolver
                 }
             } else if ($("a.button.capture").length > 0) {
                 // No captcha -> trigger pirate run
+                GM_log('Triggering pirate run!');
                 $("a.button.capture").first().click();
             }
         }
@@ -103,6 +105,10 @@
                 return;
             }
 
+            // Helpfull for debugging
+            //GM_log(this.getBase64Image(img));
+            //GM_log('json=1&key=' + this.apiKey + '&method=base64&max_len=10&min_len=5&language=2&body=\"' + this.getBase64Image(img) + '\"')
+
             GM.xmlHttpRequest({
                 url: 'https://2captcha.com/in.php',
                 method: 'POST',
@@ -119,9 +125,9 @@
                     this.pollingInterval = setInterval(this.getCaptchaSolution.bind(this), 5000);
                 }.bind(this),
                 headers: {
-                    "Content-Type": "multipart/form-data"
+                    "Content-Type": "application/x-www-form-urlencoded"
                 },
-                data: 'json=1&key=' + this.apiKey + '&method=base64&max_len=10&min_len=5&language=2&body=' + this.getBase64Image(img)
+                data: 'json=1&key=' + this.apiKey + '&method=base64&max_len=10&min_len=5&language=2&body=' + encodeURIComponent(this.getBase64Image(img))
             });
         }
 
@@ -161,7 +167,7 @@
 
                     // unresolvable -> submit wrong string in order to get another captcha
                     if (res.request === 'ERROR_CAPTCHA_UNSOLVABLE') {
-                        this.submitSolution('X');
+                        this.submitSolution('Xxd');
                         this.clear();
                         return;
                     }
