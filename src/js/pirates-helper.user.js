@@ -16,6 +16,7 @@
     const CFG_API_KEY = '';
     const CFG_WITH_SOUND = true;
     const CFG_CHECK_SEC = 5;
+    const RELOAD_MIN = 10;
 
     // ------------------ CONFIG AREA END -------------------
 
@@ -29,6 +30,7 @@
         constructor() {
             this.captchaSolver = new CaptchaSolver(CFG_API_KEY);
             this.checkInterval = null;
+            this.lastTime = Date.now()
         
         }
 
@@ -54,6 +56,10 @@
                 return;
             }
 
+            var now = Date.now();
+            var diff = now - this.lastTime;
+            var minutes = diff / 1000 / 60;
+
             if ($('#captcha').length > 0) {
                 // Captcha found -> try to solve it
                 if (CFG_API_KEY.length > 0 && this.captchaSolver.captchaId === null) {
@@ -64,9 +70,19 @@
                 // No captcha -> trigger pirate run
                 GM_log('Triggering pirate run!');
                 $("a.button.capture").first().click();
+            } else if (minutes > RELOAD_MIN) {
+                GM_log('Reloading Pirate Fortress page.');
+                // Reset value.
+                this.lastTime = Date.now()
+
+                // Click Show Town, to partly reload page. 
+                // $("a.smallFont")[2].click();
+                // Click on building 17 to open Pirate Fortress.
+                document.getElementById("js_CityPosition17Link").click();
             }
         }
     }
+
 
     /**
      * Tries to solve a captcha using the captcha2 API
