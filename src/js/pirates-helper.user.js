@@ -17,7 +17,7 @@
     const CFG_WITH_SOUND = true;
     const CFG_CHECK_SEC = 5;
     const RELOAD_MIN = 30;
-    const RELOAD_PIRATE_MIN = 30;
+    const RELOAD_PIRATE_MIN = 15;
 
     // ------------------ CONFIG AREA END -------------------
 
