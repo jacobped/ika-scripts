@@ -16,7 +16,8 @@
     const CFG_API_KEY = '';
     const CFG_WITH_SOUND = true;
     const CFG_CHECK_SEC = 5;
-    const RELOAD_MIN = 10;
+    const RELOAD_MIN = 30;
+    const RELOAD_PIRATE_MIN = 30;
 
     // ------------------ CONFIG AREA END -------------------
 
@@ -29,23 +30,28 @@
          */
         constructor() {
             this.captchaSolver = new CaptchaSolver(CFG_API_KEY);
-            this.checkInterval = null;
-            this.lastTime = Date.now()
-        
+            this.checkIntervalState = null;
+            this.reloadIntervalState = null;
+            this.lastTime = Date.now();
         }
 
         /**
          * Starts the pirate state checks
          */
         start() {
-            this.checkInterval = setInterval(this.check.bind(this), CFG_CHECK_SEC * 1000);
+            this.checkIntervalState = setInterval(this.check.bind(this), CFG_CHECK_SEC * 1000);
+            this.reloadIntervalState = setInterval(this.reloadPage.bind(this), RELOAD_MIN * 60 * 1000);
+
+            // Default open pirate fortress on first page load.
+            this.openPirateFortress();
         }
 
         /**
          * Stops the pirate state checks
          */
         stop() {
-            clearInterval(this.checkInterval);
+            clearInterval(this.checkIntervalState);
+            clearInterval(this.reloadIntervalState);
         }
 
         /**
@@ -65,20 +71,43 @@
                 if (CFG_API_KEY.length > 0 && this.captchaSolver.captchaId === null) {
                     this.captchaSolver.initCaptchaSolver(document.querySelector('.captchaImage'));
                     //this.stop() //placed for debugging capchaSolver
+                } else if (CFG_API_KEY === '') {
+                    GM_log('API key is empty...');
                 }
             } else if ($("a.button.capture").length > 0) {
                 // No captcha -> trigger pirate run
                 GM_log('Triggering pirate run!');
                 $("a.button.capture").first().click();
-            } else if (minutes > RELOAD_MIN) {
+            } else if (minutes > RELOAD_PIRATE_MIN) {
                 GM_log('Reloading Pirate Fortress page.');
                 // Reset value.
                 this.lastTime = Date.now()
 
+                
+                this.openPirateFortress();
+            }
+        }
+
+        reloadPage() {
+            let city17slot = document.getElementById("js_CityPosition17Link")
+            let isPirateFortress = city17slot.title.includes("Pirate Fortress");
+            if(isPirateFortress) {
+                GM_log('Found pirate fortress. Reloading..');
                 // Click Show Town, to partly reload page. 
-                // $("a.smallFont")[2].click();
+                $("a.smallFont")[2].click();
+            }
+        }
+
+        openPirateFortress() {
+            let city17slot = document.getElementById("js_CityPosition17Link")
+            let isPirateFortress = city17slot.title.includes("Pirate Fortress");
+
+            if(isPirateFortress) {
+                GM_log('Found pirate fortress. Clicking..');
                 // Click on building 17 to open Pirate Fortress.
-                document.getElementById("js_CityPosition17Link").click();
+                city17slot.click();
+            } else {
+                GM_log('Slot 17 is not a pirate fortress. skipping select.');
             }
         }
     }
