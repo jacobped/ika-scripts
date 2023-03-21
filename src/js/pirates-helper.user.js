@@ -16,7 +16,7 @@
     const CFG_API_KEY = '';
     const CFG_WITH_SOUND = true;
     const CFG_CHECK_SEC = 5;
-    const RELOAD_MIN = 30;
+    const RELOAD_MIN = 60;
     const RELOAD_PIRATE_MIN = 15;
 
     // ------------------ CONFIG AREA END -------------------
@@ -94,7 +94,8 @@
             if(isPirateFortress) {
                 GM_log('Found pirate fortress. Reloading..');
                 // Click Show Town, to partly reload page. 
-                $("a.smallFont")[2].click();
+                //$("a.smallFont")[2].click();
+                location.reload();
             }
         }
 
