@@ -92,7 +92,7 @@
             let city17slot = document.getElementById("js_CityPosition17Link")
             let isPirateFortress = city17slot.title.includes("Pirate Fortress");
             if(isPirateFortress) {
-                GM_log('Found pirate fortress. Reloading..');
+                GM_log('Pirate script reloading page..');
                 // Click Show Town, to partly reload page. 
                 //$("a.smallFont")[2].click();
                 location.reload();
