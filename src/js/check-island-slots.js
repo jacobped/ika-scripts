@@ -1,17 +1,19 @@
 // ==UserScript==
 // @name         Ikariam Check island slots
-// @namespace    http://tampermonkey.net/
-// @version      0.3
-// @description  Notify when island has slot available in world view
-// @author       Domi95
-// @match        https://*.ikariam.gameforge.com/*
+// @namespace    https://tampermonkey.net/
+// @version      0.2
+// @description  Notify when specific island has slot available while in world view
+// @author       Skillz0r & jacobped
 // @icon         https://www.google.com/s2/favicons?domain=ikariam.com
-// @grant        none
+// @match        *://*.ikariam.gameforge.com/?view=worldmap_iso*
+// @grant       GM_notification
 // ==/UserScript==
+// @require https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js
 
 (function() {
     'use strict';
     var cities = [];
+    // Add more cities.push lines to monitor more island. Needs the fill name from island view.
     cities.push({"name":'Chraestios [87:94]', "max_slots": 17});
 
     setTimeout( function () {
@@ -20,7 +22,7 @@
             if(diff > 0){
                 var id = $(".islandTile[title='" + cities[i].name + "']").find(".linkurl").attr('id');
                 GM_notification ( {title: 'Slot avaliable',
-                                   image: 'https://s302-en.ikariam.gameforge.com/cdn/all/both/world/insel_2.png',
+                                   image: 'https://s304-en.ikariam.gameforge.com/cdn/all/both/world/insel_2.png',
                                    text: diff + " slot(s) available on " + cities[i].name,
                                    onclick: function(event){
                                        document.getElementById(id).click();
