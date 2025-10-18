@@ -5,11 +5,23 @@
 // @description  Simple shared helper that resolves when window.ikariam.model is available
 // @author       jacobped
 // @match        https://*.ikariam.gameforge.com/*
-// @grant        none
+// @grant        GM_log
 // ==/UserScript==
 
 (function (global) {
     'use strict';
+
+    // small gm_log wrapper: prefer GM_log, then global.gm_log, then console.log
+    function gm_log(/* ...args */) {
+        const args = Array.prototype.slice.call(arguments);
+        try {
+            if (typeof GM_log === 'function') { GM_log.apply(null, args); return; }
+        } catch (e) {}
+        try {
+            if (global && typeof global.gm_log === 'function') { global.gm_log.apply(global, args); return; }
+        } catch (e) {}
+        try { console.log('[waitForIkariamModel]', ...args); } catch (e) {}
+    }
 
     // Simple, cached helper. Call without args: waitForIkariamModel().then(...)
     function waitForIkariamModel() {
@@ -18,6 +30,8 @@
         const SLOW_INTERVAL = 500;        // ms between checks during slow phase
         const TOTAL_TIMEOUT = 60000;      // ms before final rejection
 
+        gm_log('waitForIkariamModel called');
+
         // immediate quick return if already present
         try {
             if (global.ikariam && global.ikariam.model) {
@@ -25,14 +39,19 @@
                 waitForIkariamModel._cached = Promise.resolve(model);
                 waitForIkariamModel._available = true;
                 try { whenModelReady._model = model; } catch (e) {}
+                gm_log('Model already present — returning resolved promise');
                 return waitForIkariamModel._cached;
             }
         } catch (e) {
             // ignore synchronous access errors and continue to observation/polling
+            gm_log('Synchronous access to global.ikariam threw, falling back to polling/observer', e && e.message ? e.message : e);
         }
 
         // return cached promise if a poll is already running
-        if (waitForIkariamModel._cached) return waitForIkariamModel._cached;
+        if (waitForIkariamModel._cached) {
+            gm_log('Returning existing cached promise');
+            return waitForIkariamModel._cached;
+        }
 
         const startTime = Date.now();
 
@@ -40,11 +59,13 @@
             let resolved = false;
             let observer = null;
             const timers = [];
+            let lastPhase = 'fast';
 
             function cleanup() {
                 if (observer) {
-                    try { observer.disconnect(); } catch (e) {}
+                    try { observer.disconnect(); } catch (e) { /* ignore */ }
                     observer = null;
+                    gm_log('MutationObserver disconnected');
                 }
                 for (const t of timers) clearTimeout(t);
                 timers.length = 0;
@@ -61,6 +82,7 @@
                 cleanup();
                 waitForIkariamModel._available = true;
                 try { whenModelReady._model = global.ikariam.model; } catch (e) {}
+                gm_log('Model found — resolving');
                 resolve(global.ikariam.model);
                 return true;
             }
@@ -74,6 +96,7 @@
                     for (const m of mutations) {
                         for (const node of m.addedNodes) {
                             if (node && node.nodeType === 1 && node.tagName && node.tagName.toLowerCase() === 'script') {
+                                gm_log('Detected new <script> node; scheduling immediate check');
                                 // for external scripts, wait for load; for inline scripts, schedule an immediate check
                                 try {
                                     node.addEventListener('load', () => { setTimeout(onFound, 0); }, { once: true });
@@ -86,8 +109,9 @@
                     }
                 });
                 observer.observe(document, { childList: true, subtree: true });
+                gm_log('MutationObserver attached to document');
             } catch (e) {
-                // if observer cannot be created (very old env), fall back to polling only
+                gm_log('MutationObserver unavailable, falling back to polling only', e && e.message ? e.message : e);
             }
 
             // continuous polling with fast then slow intervals until TOTAL_TIMEOUT
@@ -100,22 +124,30 @@
                     if (now - startTime >= TOTAL_TIMEOUT) {
                         cleanup();
                         waitForIkariamModel._available = false;
+                        gm_log('Timeout reached; rejecting promise after', TOTAL_TIMEOUT, 'ms');
                         reject(new Error('ikariam.model not found within timeout'));
                         return;
                     }
                     // decide next interval based on phase
                     const nextInterval = now < fastPhaseEnd ? FAST_INTERVAL : SLOW_INTERVAL;
+                    const nextPhase = now < fastPhaseEnd ? 'fast' : 'slow';
+                    if (nextPhase !== lastPhase) {
+                        gm_log('Switching polling phase to', nextPhase, 'interval', nextInterval);
+                        lastPhase = nextPhase;
+                    }
                     scheduleNextPoll(nextInterval);
                 }, interval);
                 timers.push(t);
             }
 
             // kick off the polling loop
+            gm_log('Starting polling loop (fast interval', FAST_INTERVAL, 'ms)');
             scheduleNextPoll(FAST_INTERVAL);
         });
 
         // cache but clear cache on final rejection
         waitForIkariamModel._cached = p.catch(err => {
+            gm_log('Cached poll rejected; clearing cache', err && err.message ? err.message : err);
             waitForIkariamModel._cached = null;
             waitForIkariamModel._available = false;
             throw err;
