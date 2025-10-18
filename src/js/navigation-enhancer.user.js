@@ -12,6 +12,34 @@
 (function() {
     'use strict';
 
+    function waitForIkariamModel(timeout = 30000, interval = 100) {
+        return new Promise((resolve, reject) => {
+            const start = Date.now();
+            let errorCount = 0;
+            let lastErrorMessage = null;
+            const iv = setInterval(() => {
+                try {
+                    if (window.ikariam && window.ikariam.model) {
+                        clearInterval(iv);
+                        resolve();
+                    } else if (Date.now() - start > timeout) {
+                        clearInterval(iv);
+                        reject(new Error('ikariam.model not found within timeout'));
+                    }
+                } catch (e) {
+                    // keep a small, throttled log to aid future debugging without spamming
+                    errorCount++;
+                    const msg = e && e.message ? e.message : String(e);
+                    if (errorCount === 1 || errorCount % 50 === 0 || msg !== lastErrorMessage) {
+                        console.debug(`waitForIkariamModel polling error (#${errorCount}):`, e);
+                        lastErrorMessage = msg;
+                    }
+                    // continue polling; do not reject immediately because ikariam may still initialize
+                }
+            }, interval);
+        });
+    }
+
     class IkariamCity {
         constructor(id, name, coords, good) {
             this.id = id;
@@ -205,5 +233,17 @@
         }
     }
 
-    new IkariamNavigationEnhancer().init();
+    // wait for ikariam.model before initializing
+    waitForIkariamModel(30000, 150).then(() => {
+        new IkariamNavigationEnhancer().init();
+    }).catch((err) => {
+        console.warn('Ikariam Navigation Enhancer: ' + err.message);
+        // fallback: try a longer poll in case ikariam boots slowly
+        waitForIkariamModel(120000, 250).then(() => {
+            new IkariamNavigationEnhancer().init();
+        }).catch(() => {
+            console.warn('Ikariam Navigation Enhancer: giving up waiting for ikariam.model');
+        });
+    });
+
 })();
