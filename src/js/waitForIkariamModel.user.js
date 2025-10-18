@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Ikariam: waitForIkariamModel (lib)
 // @namespace    http://tampermonkey.net/
-// @version      1.0
+// @version      1.1
 // @description  Simple shared helper that resolves when window.ikariam.model is available
 // @author       jacobped
 // @match        https://*.ikariam.gameforge.com/*
@@ -63,8 +63,42 @@
         return waitForIkariamModel._cached;
     }
 
+    // --- Added convenience helpers ---
+    // whenModelReady(callback) -> runs callback(model) when model is ready (returns promise)
+    // whenModelReady() -> returns promise resolving to model
+    function whenModelReady(callback) {
+        // if model already discovered, return quickly
+        const existing = whenModelReady._model || (global.ikariam && global.ikariam.model);
+        if (existing) {
+            whenModelReady._model = existing;
+            if (typeof callback === 'function') {
+                try { return Promise.resolve(callback(existing)); } catch (e) { return Promise.reject(e); }
+            }
+            return Promise.resolve(existing);
+        }
+
+        // otherwise wait
+        const p = waitForIkariamModel().then(model => {
+            whenModelReady._model = model;
+            return model;
+        });
+
+        if (typeof callback === 'function') {
+            return p.then(model => {
+                try { return callback(model); } catch (e) { throw e; }
+            });
+        }
+        return p;
+    }
+
+    // quick synchronous getter (may be null)
+    function getModelSync() {
+        return whenModelReady._model || (global.ikariam && global.ikariam.model) || null;
+    }
+    // --- end additions ---
+
     // export
-    const __IkariamWaitLib = { waitForIkariamModel };
+    const __IkariamWaitLib = { waitForIkariamModel, whenModelReady, getModelSync };
     try { global.__IkariamWaitLib = __IkariamWaitLib; } catch (e) {}
     global.__IkariamWaitLib = __IkariamWaitLib;
 
