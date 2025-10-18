@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Ikariam Navigation Enhancer
 // @namespace    http://tampermonkey.net/
-// @version      0.3
+// @version      0.4
 // @description  try to take over the world!
 // @author       Domi95
 // @match        https://*.ikariam.gameforge.com/*
