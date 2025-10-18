@@ -7,8 +7,8 @@
 // @icon         https://www.google.com/s2/favicons?domain=ikariam.com
 // @match        *://*.ikariam.gameforge.com/?view=worldmap_iso*
 // @grant       GM_notification
-// ==/UserScript==
 // @require https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js
+// ==/UserScript==
 
 (function() {
     'use strict';
