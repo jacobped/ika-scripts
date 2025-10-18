@@ -18,6 +18,21 @@
         const FALLBACK_TIMEOUT = 30000;
         const FALLBACK_INTERVAL = 250;
 
+        // If the model is already present, cache and return immediately
+        try {
+            if (global.ikariam && global.ikariam.model) {
+                const model = global.ikariam.model;
+                // cache resolved promise so all future callers return immediately
+                waitForIkariamModel._cached = Promise.resolve(model);
+                // mark availability and propagate to whenModelReady quick getter
+                waitForIkariamModel._available = true;
+                try { whenModelReady._model = model; } catch (e) { /* whenModelReady may be hoisted; ignore if not */ }
+                return waitForIkariamModel._cached;
+            }
+        } catch (e) {
+            // ignore synchronous access errors, continue to polling
+        }
+
         // cached promise so multiple consumers don't duplicate polling
         if (waitForIkariamModel._cached) return waitForIkariamModel._cached;
 
@@ -30,6 +45,9 @@
                     try {
                         if (global.ikariam && global.ikariam.model) {
                             clearInterval(iv);
+                            // mark discovered so future calls can short-circuit
+                            waitForIkariamModel._available = true;
+                            try { whenModelReady._model = global.ikariam.model; } catch (e) {}
                             resolve(global.ikariam.model);
                         } else if (Date.now() - start > timeout) {
                             clearInterval(iv);
@@ -57,6 +75,7 @@
         // cache but drop cache if final rejection happens so future callers can try again
         waitForIkariamModel._cached = p.catch(err => {
             waitForIkariamModel._cached = null;
+            waitForIkariamModel._available = false;
             throw err;
         });
 
