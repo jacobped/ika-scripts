@@ -13,9 +13,9 @@
 
     // Simple, cached helper. Call without args: waitForIkariamModel().then(...)
     function waitForIkariamModel() {
-        const FIRST_TIMEOUT = 30000;
+        const FIRST_TIMEOUT = 5000;
         const FIRST_INTERVAL = 150;
-        const FALLBACK_TIMEOUT = 120000;
+        const FALLBACK_TIMEOUT = 30000;
         const FALLBACK_INTERVAL = 250;
 
         // cached promise so multiple consumers don't duplicate polling
