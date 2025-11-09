@@ -1,12 +1,13 @@
 // ==UserScript==
 // @name         Ikariam Report Enhancer
 // @namespace    http://tampermonkey.net/
-// @version      0.2
+// @version      0.3
 // @description  try to take over the world!
 // @author       Domi95
 // @match        https://*.ikariam.gameforge.com/*
 // @icon         https://www.google.com/s2/favicons?domain=ikariam.com
 // @grant        none
+// @require      https://github.com/jacobped/ika-scripts/raw/refs/heads/master/src/js/waitForIkariamModel.user.js
 // ==/UserScript==
 
 (function() {
@@ -366,5 +367,10 @@
         }
     }
 
-    window.IkariamReportEnhancer = new IkariamReportEnhancerController();
+    // wait for ikariam.model before initializing (use shared lib)
+    const lib = typeof __IkariamWaitLib !== 'undefined' ? __IkariamWaitLib : window.__IkariamWaitLib;
+    if (!lib) console.warn('Ikariam Report Enhancer: wait-for-ikariam-model lib not loaded');
+    else lib.waitForIkariamModel().then(() => {
+        window.IkariamReportEnhancer = new IkariamReportEnhancerController();
+    });
 })();
