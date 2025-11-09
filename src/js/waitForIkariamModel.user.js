@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Ikariam: waitForIkariamModel (lib)
 // @namespace    http://tampermonkey.net/
-// @version      1.1
+// @version      1.2
 // @description  Simple shared helper that resolves when window.ikariam.model is available
 // @author       jacobped
 // @match        https://*.ikariam.gameforge.com/*
@@ -23,6 +23,24 @@
         try { console.log('[waitForIkariamModel]', ...args); } catch (e) {}
     }
 
+    // Enhanced synchronous model getter with unsafeWindow fallback
+    function getModelSync() {
+        try {
+            // Try unsafeWindow first (more direct in userscript context)
+            if (typeof unsafeWindow !== 'undefined' && unsafeWindow && unsafeWindow.ikariam && unsafeWindow.ikariam.model) {
+                return unsafeWindow.ikariam.model;
+            }
+        } catch (e) { /* ignore */ }
+        
+        try {
+            // Fallback to cached model or global window
+            if (whenModelReady._model) return whenModelReady._model;
+            if (global.ikariam && global.ikariam.model) return global.ikariam.model;
+        } catch (e) { /* ignore */ }
+        
+        return null;
+    }
+
     // Simple, cached helper. Call without args: waitForIkariamModel().then(...)
     function waitForIkariamModel() {
         const FAST_PHASE_DURATION = 5000; // ms of fast polling
@@ -32,19 +50,14 @@
 
         gm_log('waitForIkariamModel called');
 
-        // immediate quick return if already present
-        try {
-            if (global.ikariam && global.ikariam.model) {
-                const model = global.ikariam.model;
-                waitForIkariamModel._cached = Promise.resolve(model);
-                waitForIkariamModel._available = true;
-                try { whenModelReady._model = model; } catch (e) {}
-                gm_log('Model already present — returning resolved promise');
-                return waitForIkariamModel._cached;
-            }
-        } catch (e) {
-            // ignore synchronous access errors and continue to observation/polling
-            gm_log('Synchronous access to global.ikariam threw, falling back to polling/observer', e && e.message ? e.message : e);
+        // immediate quick return if already present - enhanced check
+        const existingModel = getModelSync();
+        if (existingModel) {
+            waitForIkariamModel._cached = Promise.resolve(existingModel);
+            waitForIkariamModel._available = true;
+            try { whenModelReady._model = existingModel; } catch (e) {}
+            gm_log('Model already present — returning resolved promise');
+            return waitForIkariamModel._cached;
         }
 
         // return cached promise if a poll is already running
@@ -160,8 +173,8 @@
     // whenModelReady(callback) -> runs callback(model) when model is ready (returns promise)
     // whenModelReady() -> returns promise resolving to model
     function whenModelReady(callback) {
-        // if model already discovered, return quickly
-        const existing = whenModelReady._model || (global.ikariam && global.ikariam.model);
+        // Enhanced immediate check - try to get model synchronously first
+        const existing = getModelSync();
         if (existing) {
             whenModelReady._model = existing;
             if (typeof callback === 'function') {
@@ -183,12 +196,6 @@
         }
         return p;
     }
-
-    // quick synchronous getter (may be null)
-    function getModelSync() {
-        return whenModelReady._model || (global.ikariam && global.ikariam.model) || null;
-    }
-    // --- end additions ---
 
     // export
     const __IkariamWaitLib = { waitForIkariamModel, whenModelReady, getModelSync };
