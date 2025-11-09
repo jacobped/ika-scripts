@@ -6,6 +6,7 @@
 // @author       Domi95
 // @match        https://*.ikariam.gameforge.com/?view=island*
 // @icon         https://www.google.com/s2/favicons?domain=ikariam.com
+// @run-at       document-idle
 // @grant        none
 // ==/UserScript==
 
