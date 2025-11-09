@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Ikariam: waitForIkariamModel (lib)
 // @namespace    http://tampermonkey.net/
-// @version      1.1
+// @version      1.2
 // @description  Simple shared helper that resolves when window.ikariam.model is available
 // @author       jacobped
 // @match        https://*.ikariam.gameforge.com/*
