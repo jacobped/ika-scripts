@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Ikariam Report Enhancer
 // @namespace    http://tampermonkey.net/
-// @version      0.3
+// @version      0.4
 // @description  try to take over the world!
 // @author       Domi95
 // @match        https://*.ikariam.gameforge.com/*
@@ -337,7 +337,7 @@
                 cityActions = $('#sidebar .accordionItem .cityactions');
                 console.log('Sidebar found!');
                 const cityCombats = this.DB.getCombatsByCity(cityId, 5);
-                const Enhancer = $('<div style="clear: both"><table class="table01 dotted" style="width: 98%; margin-bottom: -10px;"><thead><tr><th class="left" style="background-color: rgb(220, 172, 106); border-top: 1px solid rgb(152,105,27);">Zeit</th></tr></thead><tbody></tbody></table></div>');
+                const Enhancer = $('<div style="clear: both"><table class="table01 dotted" style="width: 98%; margin-bottom: -10px;"><thead><tr><th class="left" style="background-color: rgb(220, 172, 106); border-top: 1px solid rgb(152,105,27);">Combat Reports</th></tr></thead><tbody></tbody></table></div>');
 
                 cityCombats.forEach(function(combat) {
                     Enhancer.find('tbody').append(
@@ -347,7 +347,7 @@
 
                 if (cityCombats.length === 0) {
                     Enhancer.find('tbody').append(
-                        $('<tr><td class="left"><i>Keine Berichte gefunden...</i></td></tr>')
+                        $('<tr><td class="left"><i>No reports found...</i></td></tr>')
                     );
                 }
 
