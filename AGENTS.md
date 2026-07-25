@@ -490,6 +490,40 @@ Use `z-index: 99999` or higher to ensure injected UI appears above game elements
 
 ---
 
+## 12.5. Standard Color Palette
+
+For consistent UI styling across userscripts, use this color palette:
+
+| Element | Color | Hex |
+|---------|-------|-----|
+| Panel & Modal backgrounds | Warm beige | `#eed6ad` |
+| Primary actions (Save, Add) | Green | `#559d3c` |
+| Edit/Info buttons | Blue | `#137cc4` |
+| Destructive actions (Remove, Delete) | Red | `#d14141` |
+| Neutral/Cancel buttons | Gray | `#999` |
+| Alert/Warning text | Yellow background | `#ffeb3b` |
+| Alert hover | Darker yellow | `#fdd835` |
+
+Apply these colors consistently to:
+- Modal overlays: `background: #eed6ad`
+- Add/Save buttons: `background: #559d3c`
+- Edit buttons: `background: #137cc4`
+- Remove buttons: `background: #d14141`
+- Panel backgrounds: `background: #eed6ad`
+
+Example usage (from `check-island-slots.user.js`):
+```js
+const panel = document.createElement('div');
+panel.style.cssText = `
+    background: #eed6ad;
+    border: 2px solid #333;
+    border-radius: 8px;
+    /* ... */
+`;
+```
+
+---
+
 ## 13. Existing Scripts — What Each Does
 
 ### `waitForIkariamModel.user.js` — Shared Library
