@@ -17,7 +17,7 @@
     function checkIslandSlots() {
         var cities = [];
         // Add more cities.push lines to monitor more island. Needs the fill name from island view.
-        cities.push({"name":'Chraestios [87:94]', "max_slots": 17});
+        cities.push({"name":'Hateetia [90:70]', "max_slots": 18});
 
         setTimeout( function () {
             for(var i = 0; i < cities.length; i++){
@@ -25,7 +25,7 @@
                 if(diff > 0){
                     var id = $(".islandTile[title='" + cities[i].name + "']").find(".linkurl").attr('id');
                     GM_notification ( {title: 'Slot avaliable',
-                                       image: 'https://s304-en.ikariam.gameforge.com/cdn/all/both/world/insel_2.png',
+                                       image: 'https://s302-en.ikariam.gameforge.com/cdn/all/both/world/insel_2.png',
                                        text: diff + " slot(s) available on " + cities[i].name,
                                        onclick: function(event){
                                            document.getElementById(id).click();
