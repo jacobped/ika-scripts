@@ -10,7 +10,9 @@ It currently consists of the following scripts:
 - [Ikariam check island slots](https://github.com/jacobped/ika-scripts/raw/master/src/js/check-island-slots.user.js)
 - a custom style sheet for removing some UI clutter
 
-*All userscripts were tested with the tampermonkey extension v4.17 for Firefox. Custom style can be applied for example via the Stylus extension.*
+*All userscripts were tested with the tampermonkey extension v5.5 for Firefox.*
+
+Custom style sheet can be applied for example via the Stylus extension (Not tested).
 
 ---
 
